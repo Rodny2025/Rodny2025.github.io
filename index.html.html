@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Distancia por Ruta</title>
+
+  <!-- Incluir el CSS de Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Incluir el CSS de Leaflet Routing Machine -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+  <style>
+    #map {
+      width: 100%;
+      height: 500px;
+    }
+    #distance {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculadora de Distancia por Ruta</h1>
+  <div id="map"></div>
+  <div id="distance"></div> <!-- Mostrar la distancia aquí -->
+
+  <!-- Incluir Leaflet -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Incluir Leaflet Routing Machine -->
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+  <script>
+    // Obtener las coordenadas desde los parámetros de la URL
+    function getURLParameter(name) {
+      var regex = new RegExp('[?&]' + name + '=([^&#]*)');
+      var result = regex.exec(window.location.href);
+      return result ? decodeURIComponent(result[1]) : null;
+    }
+
+    // Leer latitudes y longitudes desde la URL
+    var latA = parseFloat(getURLParameter('latA')) || 51.505;  // Latitud punto A (por defecto Londres)
+    var lonA = parseFloat(getURLParameter('lonA')) || -0.09;  // Longitud punto A (por defecto Londres)
+    var latB = parseFloat(getURLParameter('latB')) || 55.9533;  // Latitud punto B (por defecto Edimburgo)
+    var lonB = parseFloat(getURLParameter('lonB')) || -3.1883; // Longitud punto B (por defecto Edimburgo)
+
+    // Crear el mapa con Leaflet
+    var map = L.map('map').setView([latA, lonA], 13);
+
+    // Agregar los tiles de OpenStreetMap al mapa
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Crear los puntos en el mapa
+    var startPoint = L.latLng(latA, lonA);
+    var endPoint = L.latLng(latB, lonB);
+
+    // Calcular la ruta utilizando Leaflet Routing Machine y OSRM
+    var routeControl = L.Routing.control({
+      waypoints: [startPoint, endPoint],
+      routeWhileDragging: true,
+      createMarker: function() { return null; },  // Desactivar marcadores por cada punto
+      routeOptions: {
+        // Usar la API de OSRM
+        serviceUrl: 'https://router.project-osrm.org/route/v1/driving/'
+      }
+    }).addTo(map);
+
+    // Escuchar cuando la ruta se haya calculado y mostrar la distancia
+    routeControl.on('routesfound', function(e) {
+      var route = e.routes[0]; // Tomamos la primera ruta
+      var distance = route.summary.totalDistance / 1000; // Distancia en kilómetros
+
+      // Mostrar la distancia en el documento HTML
+      document.getElementById('distance').innerText = 'Distancia: ' + distance.toFixed(2) + ' km';
+    });
+  </script>
+</body>
+</html>
