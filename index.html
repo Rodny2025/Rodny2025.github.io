@@ -34,28 +34,22 @@
   <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Obtener las coordenadas desde los parámetros de la URL
-    function getURLParameter(name) {
-      var regex = new RegExp('[?&]' + name + '=([^&#]*)');
-      var result = regex.exec(window.location.href);
-      return result ? decodeURIComponent(result[1]) : null;
-    }
-
-    // Leer latitudes y longitudes desde la URL
-    var latA = parseFloat(getURLParameter('latA')) || 51.505;  // Latitud punto A (por defecto Londres)
-    var lonA = parseFloat(getURLParameter('lonA')) || -0.09;  // Longitud punto A (por defecto Londres)
-    var latB = parseFloat(getURLParameter('latB')) || 55.9533;  // Latitud punto B (por defecto Edimburgo)
-    var lonB = parseFloat(getURLParameter('lonB')) || -3.1883; // Longitud punto B (por defecto Edimburgo)
+    // Obtener los parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const latA = parseFloat(params.get('latA')) || 51.505;  // Coordenada por defecto
+    const lonA = parseFloat(params.get('lonA')) || -0.09;  // Coordenada por defecto
+    const latB = parseFloat(params.get('latB')) || 55.9533; // Coordenada por defecto
+    const lonB = parseFloat(params.get('lonB')) || -3.1883; // Coordenada por defecto
 
     // Crear el mapa con Leaflet
-    var map = L.map('map').setView([latA, lonA], 13);
+    var map = L.map('map').setView([latA, lonA], 13);  // Usar latA y lonA por defecto
 
     // Agregar los tiles de OpenStreetMap al mapa
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Crear los puntos en el mapa
+    // Crear los puntos en el mapa con las coordenadas de la URL
     var startPoint = L.latLng(latA, lonA);
     var endPoint = L.latLng(latB, lonB);
 
